@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Royal Ludo - Register</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Royal Ludo</div>
+        <nav>
+            <a href="index.html" class="home-btn">Home</a>
+        </nav>
+    </header>
+    
+    <main class="auth-container">
+        <div class="auth-card">
+            <h2>Create New Account</h2>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="regUsername">Username</label>
+                    <input type="text" id="regUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="regEmail">Email</label>
+                    <input type="email" id="regEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Password</label>
+                    <input type="password" id="regPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="regConfirmPassword">Confirm Password</label>
+                    <input type="password" id="regConfirmPassword" required>
+                </div>
+                <button type="submit" class="auth-btn">Register</button>
+            </form>
+            <p class="auth-link">Already have an account? <a href="login.html">Login here</a></p>
+            <div id="registerMessage" class="message"></div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>&copy; 2023 Royal Ludo. All rights reserved.</p>
+    </footer>
+    
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                document.getElementById('registerMessage').textContent = 'Passwords do not match';
+                document.getElementById('registerMessage').style.color = 'red';
+                return;
+            }
+            
+            try {
+                const response = await registerUser(username, email, password);
+                if (response.success) {
+                    document.getElementById('registerMessage').textContent = 'Registration successful! Redirecting...';
+                    document.getElementById('registerMessage').style.color = 'green';
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 1500);
+                } else {
+                    document.getElementById('registerMessage').textContent = response.message;
+                    document.getElementById('registerMessage').style.color = 'red';
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                document.getElementById('registerMessage').textContent = 'An error occurred during registration';
+                document.getElementById('registerMessage').style.color = 'red';
+            }
+        });
+    </script>
+</body>
+</html>
