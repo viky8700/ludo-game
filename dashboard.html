@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Royal Ludo - Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Royal Ludo</div>
+        <div class="user-info">
+            <span class="username" id="dashboardUsername">Username</span>
+            <span class="coins" id="userCoins">1000 coins</span>
+            <a href="index.html" class="logout-btn">Logout</a>
+        </div>
+    </header>
+    
+    <main class="dashboard-container">
+        <section class="user-stats">
+            <div class="stat-card">
+                <i class="fas fa-trophy"></i>
+                <h3>Games Won</h3>
+                <p id="gamesWon">0</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-gamepad"></i>
+                <h3>Games Played</h3>
+                <p id="gamesPlayed">0</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-coins"></i>
+                <h3>Coins</h3>
+                <p id="coinsBalance">1000</p>
+            </div>
+        </section>
+        
+        <section class="game-actions">
+            <h2>Start New Game</h2>
+            <div class="action-buttons">
+                <button class="action-btn" id="playWithFriends">
+                    <i class="fas fa-user-friends"></i>
+                    Play with Friends
+                </button>
+                <button class="action-btn" id="playWithAI">
+                    <i class="fas fa-robot"></i>
+                    Play with AI
+                </button>
+                <button class="action-btn" id="joinRandom">
+                    <i class="fas fa-random"></i>
+                    Join Random Game
+                </button>
+            </div>
+        </section>
+        
+        <section class="recent-games">
+            <h2>Recent Games</h2>
+            <table class="games-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Players</th>
+                        <th>Result</th>
+                        <th>Coins</th>
+                    </tr>
+                </thead>
+                <tbody id="recentGamesTable">
+                    <!-- Games will be loaded here -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+    
+    <div class="modal" id="gameSettingsModal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Game Settings</h2>
+            <form id="gameSettingsForm">
+                <div class="form-group">
+                    <label>Number of Players</label>
+                    <select id="playerCount">
+                        <option value="2">2 Players</option>
+                        <option value="3">3 Players</option>
+                        <option value="4">4 Players</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Bet Amount (coins)</label>
+                    <input type="number" id="betAmount" min="50" max="1000" value="100">
+                </div>
+                <div class="form-group">
+                    <label>Game Type</label>
+                    <select id="gameType">
+                        <option value="classic">Classic Ludo</option>
+                        <option value="quick">Quick Ludo</option>
+                    </select>
+                </div>
+                <button type="submit" class="start-game-btn">Start Game</button>
+            </form>
+        </div>
+    </div>
+    
+    <footer>
+        <p>&copy; 2023 Royal Ludo. All rights reserved.</p>
+    </footer>
+    
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        // Load user data
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            document.getElementById('dashboardUsername').textContent = user.username;
+            document.getElementById('userCoins').textContent = `${user.coins} coins`;
+            document.getElementById('coinsBalance').textContent = user.coins;
+            
+            // Load user stats
+            loadUserStats(user.id);
+            
+            // Game buttons
+            document.getElementById('playWithFriends').addEventListener('click', () => {
+                document.getElementById('gameSettingsModal').style.display = 'block';
+            });
+            
+            document.getElementById('playWithAI').addEventListener('click', () => {
+                // Start game with AI
+                window.location.href = 'game.html?players=2&ai=true';
+            });
+            
+            document.getElementById('joinRandom').addEventListener('click', () => {
+                // Join random game
+                window.location.href = 'game.html?join=random';
+            });
+            
+            // Modal close button
+            document.querySelector('#gameSettingsModal .close-btn').addEventListener('click', () => {
+                document.getElementById('gameSettingsModal').style.display = 'none';
+            });
+            
+            // Start game form
+            document.getElementById('gameSettingsForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const playerCount = document.getElementById('playerCount').value;
+                const betAmount = document.getElementById('betAmount').value;
+                const gameType = document.getElementById('gameType').value;
+                
+                // Start game with friends
+                window.location.href = `game.html?players=${playerCount}&bet=${betAmount}&type=${gameType}`;
+            });
+        });
+        
+        async function loadUserStats(userId) {
+            try {
+                const stats = await getUserStats(userId);
+                document.getElementById('gamesWon').textContent = stats.gamesWon;
+                document.getElementById('gamesPlayed').textContent = stats.gamesPlayed;
+                
+                // Load recent games
+                const games = await getRecentGames(userId);
+                const tableBody = document.getElementById('recentGamesTable');
+                games.forEach(game => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${new Date(game.date).toLocaleDateString()}</td>
+                        <td>${game.players.join(', ')}</td>
+                        <td
